@@ -8,7 +8,6 @@ var gulp = require("gulp"),
 	buffer = require("vinyl-buffer"),
 	pkg = require("./package.json"),
 	debug = require("gulp-debug"),
-	eslint = require("gulp-eslint"),
 	prettify = require("gulp-jsbeautifier"),
 	browserify = require("browserify"),
 	source = require("vinyl-source-stream"),
@@ -27,19 +26,11 @@ gulp.task("prettify-js", [], function() {
 		.pipe(prettify({js: {brace_style: "collapse", indent_char: "\t", indent_size: 1, max_preserve_newlines: 3, space_before_conditional: false}}))
 		.pipe(gulp.dest("./src/js"));
 });
- 
+
 gulp.task("prettify-css", [], function() {
 	return gulp.src("./src/css/simplemde.css")
 		.pipe(prettify({css: {indentChar: "\t", indentSize: 1}}))
 		.pipe(gulp.dest("./src/css"));
-});
-
-gulp.task("lint", ["prettify-js"], function() {
-	gulp.src("./src/js/**/*.js")
-		.pipe(debug())
-		.pipe(eslint())
-		.pipe(eslint.format())
-		.pipe(eslint.failAfterError());
 });
 
 function taskBrowserify(opts) {
@@ -47,7 +38,7 @@ function taskBrowserify(opts) {
 		.bundle();
 }
 
-gulp.task("browserify:debug", ["lint"], function() {
+gulp.task("browserify:debug", [], function() {
 	return taskBrowserify({debug:true, standalone:"SimpleMDE"})
 		.pipe(source("simplemde.debug.js"))
 		.pipe(buffer())
@@ -55,7 +46,7 @@ gulp.task("browserify:debug", ["lint"], function() {
 		.pipe(gulp.dest("./debug/"));
 });
 
-gulp.task("browserify", ["lint"], function() {
+gulp.task("browserify", [], function() {
 	return taskBrowserify({standalone:"SimpleMDE"})
 		.pipe(source("simplemde.js"))
 		.pipe(buffer())
@@ -63,9 +54,9 @@ gulp.task("browserify", ["lint"], function() {
 		.pipe(gulp.dest("./debug/"));
 });
 
-gulp.task("scripts", ["browserify:debug", "browserify", "lint"], function() {
+gulp.task("scripts", ["browserify:debug", "browserify"], function() {
 	var js_files = ["./debug/simplemde.js"];
-	
+
 	return gulp.src(js_files)
 		.pipe(concat("simplemde.min.js"))
 		.pipe(uglify())
@@ -80,7 +71,7 @@ gulp.task("styles", ["prettify-css"], function() {
 		"./src/css/*.css",
 		"./node_modules/codemirror-spell-checker/src/css/spell-checker.css"
 	];
-	
+
 	return gulp.src(css_files)
 		.pipe(concat("simplemde.css"))
 		.pipe(buffer())
